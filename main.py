@@ -1,0 +1,40 @@
+import streamlit as st
+from openai import OpenAI
+import os
+
+# 페이지 제목
+st.title("📝 AI Poet")
+st.write("주제를 입력하면 인공지능이 시를 만들어 드립니다.")
+
+# API 키 불러오기
+api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    st.error("⚠ OPENAI_API_KEY가 설정되지 않았습니다. .env 또는 Streamlit Secrets을 확인하세요.")
+else:
+    client = OpenAI(api_key=api_key)
+
+# 주제 입력
+topic = st.text_input("시의 주제를 입력하세요:")
+
+# 버튼 / 시 생성
+if st.button("시 생성하기"):
+    if topic.strip() == "":
+        st.warning("주제를 입력해주세요!")
+    else:
+        prompt = f"'{topic}'을 주제로 4~6줄의 감성적인 한국어 시를 작성해줘."
+
+        # OpenAI 호출
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "너는 감성적인 한국어 시를 쓰는 시인이다."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=150
+        )
+
+        poem = response.choices[0].message.content
+
+        st.subheader("✨ 생성된 시")
+        st.write(poem)
